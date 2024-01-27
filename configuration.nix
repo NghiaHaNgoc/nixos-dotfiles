@@ -11,7 +11,7 @@
 
   # Options
   nix.package = pkgs.nix;
-  nixpkgs.config.allowUnfree = true;
+  # nixpkgs.config.allowUnfree = true;
   system.defaultChannel = "https://nixos.org/channels/nixos-unstable";
   documentation.nixos.enable = false;
   hardware.bluetooth.enable = true;
@@ -22,8 +22,8 @@
     kernelParams = [ "quiet" ];
     consoleLogLevel = 0;
     initrd = {
-      systemd.enable = true;
-      verbose = false;
+      #systemd.enable = true;
+      #verbose = false;
     };
     loader = {
       systemd-boot = {
@@ -72,6 +72,7 @@
       displayManager.gdm.enable = true;
       desktopManager.gnome = {
         enable = true;
+        extraGSettingsOverridePackages = with pkgs; [ gnome.mutter ];
         extraGSettingsOverrides = ''
           [org.gnome.mutter]
           dynamic-workspaces = true
@@ -84,8 +85,19 @@
     };
     gnome.core-utilities.enable = false;
   };
+
+  environment.sessionVariables = {
+    VSCODE_GALLERY_SERVICE_URL =
+      "https://marketplace.visualstudio.com/_apis/public/gallery";
+    VSCODE_GALLERY_ITEM_URL = "https://marketplace.visualstudio.com/items";
+    VSCODE_GALLERY_CACHE_URL =
+      "https://vscode.blob.core.windows.net/gallery/index";
+    VSCODE_GALLERY_CONTROL_URL = "";
+
+  };
   environment.sessionVariables.NAUTILUS_4_EXTENSION_DIR =
-    "${config.system.path}/lib/nautilus/extensions-4";
+    #"${config.system.path}/lib/nautilus/extensions-4";
+    "/etc/profiles/per-user/$USER/lib/nautilus/extensions-4";
   environment.gnome.excludePackages = with pkgs; [
     gnome-tour
     gnome.gnome-backgrounds
@@ -107,34 +119,75 @@
       starship
       amberol
       wezterm
-      noto-fonts
+      kitty
       # Development
-      vscode
+      vscodium
       git
+      gcc
       rustup
       nodePackages.nodejs
       nodePackages.typescript-language-server
       vscode-langservers-extracted
+      # Gnome package
+      baobab
+      loupe
+      gnome.gnome-system-monitor
+      gnome.totem
+      gnomeExtensions.pano
+      gnomeExtensions.blur-my-shell
+      gnome.file-roller
+      gnome.nautilus
+      gnome.nautilus-python
     ];
   };
-  services.gnome.sushi.enable = true;
+  users.users.ngocnghia = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    shell = pkgs.fish;
+  };
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    neovim
-    wl-clipboard
-    # Gnome package
-    baobab
-    loupe
-    gnome.gnome-system-monitor
-    gnome.totem
-    gnomeExtensions.pano
-    gnomeExtensions.blur-my-shell
-    gnome.nautilus
-    gnome.nautilus-python
-    gnome.file-roller
-  ];
+  environment.systemPackages = with pkgs; [ neovim wl-clipboard ];
   programs.fish.enable = true;
+
+  #fonts.fontDir.enable = true;
+  fonts.packages = with pkgs; [ noto-fonts maple-mono-otf ];
+  nixpkgs = {
+    overlays = [
+      (self: super: {
+        gnome = super.gnome.overrideScope' (selfg: superg: {
+          gnome-shell = superg.gnome-shell.overrideAttrs (old: {
+            patches = (old.patches or [ ]) ++ [
+              (pkgs.writeText "bg.patch" ''
+                --- a/data/theme/gnome-shell-sass/widgets/_login-lock.scss
+                +++ b/data/theme/gnome-shell-sass/widgets/_login-lock.scss
+                @@ -15,7 +15,8 @@ $_gdm_dialog_width: 23em;
+                 
+                 /* Login Dialog */
+                 .login-dialog {
+                -  background-color: $_gdm_bg;
+                +  background: url(file:///etc/nixos/gdm.jpg) no-repeat fixed 0 0 / cover;
+                +  filter: blur(8px);
+                 }
+                 
+                 // buttons
+                @@ -167,7 +168,8 @@ $_gdm_dialog_width: 23em;
+                 }
+                 
+                 #lockDialogGroup {
+                -  background-color: $_gdm_bg;
+                +  background: url(file:///etc/nixos/gdm.jpg) no-repeat fixed 0 0 / cover;
+                +  filter: blur(8px);
+                 }
+                 
+                 // Clock
+              '')
+            ];
+          });
+        });
+      })
+    ];
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
