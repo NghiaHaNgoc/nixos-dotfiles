@@ -4,15 +4,42 @@
  /* Login Dialog */
  .login-dialog {
    background-color: $_gdm_bg;
-+  background-image: url(file:///etc/nixos/gdm/gdm.jpg);
++  // background-image: url(file:///etc/nixos/gdm/gdm.jpg);
 +  background-size: cover;
 +  background-repeat: no-repeat;
 +  background-position: center center;
  }
- 
+
  // buttons
-@@ -169,6 +173,10 @@ $_gdm_dialog_width: 23em;
- 
+@@ -40,8 +44,8 @@ $_gdm_dialog_width: 23em;
+ .login-dialog-logo-bin {
+   margin:3em 0;
+ }
+-.login-dialog-banner { color: darken($_gdm_fg,10%); }
+-.login-dialog-banner-view { max-width: $_gdm_dialog_width; }
++.login-dialog-banner {background: green; color: darken($_gdm_fg,10%); }
++.login-dialog-banner-view {background: orange; max-width: $_gdm_dialog_width; }
+ .login-dialog-message { text-align: center; }
+ .login-dialog-user-selection-box { padding: 100px 0px; }
+
+@@ -62,6 +66,7 @@ $_gdm_dialog_width: 23em;
+
+ .login-dialog-auth-list-view { -st-vfade-offset: 1em; }
+ .login-dialog-auth-list {
++  background: purple;
+   spacing: 6px;
+   margin-left: 2em;
+ }
+@@ -141,6 +146,7 @@ $_gdm_dialog_width: 23em;
+ }
+
+ .login-dialog-prompt-layout {
++  background: red;
+   spacing: $base_padding*2;
+   width: 26em;
+ }
+@@ -169,6 +175,10 @@ $_gdm_dialog_width: 23em;
+
  #lockDialogGroup {
    background-color: $_gdm_bg;
 +  background-image: url(file:///etc/nixos/gdm/gdm-blur.jpg);
@@ -20,5 +47,5 @@
 +  background-repeat: no-repeat;
 +  background-position: center center;
  }
- 
+
  // Clock
