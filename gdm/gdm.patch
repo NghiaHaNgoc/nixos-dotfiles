@@ -1,18 +1,18 @@
 --- a/data/theme/gnome-shell-sass/widgets/_login-lock.scss
 +++ b/data/theme/gnome-shell-sass/widgets/_login-lock.scss
-@@ -22,6 +22,10 @@ $_gdm_dialog_width: 25em;
- // uses dark grey system styles
+@@ -15,6 +15,10 @@ $_gdm_dialog_width: 23em;
+ /* Login Dialog */
  .login-dialog {
    background-color: $_gdm_bg;
 +  background-image: url(file:///etc/nixos/gdm/gdm.jpg);
 +  background-size: cover;
 +  background-repeat: no-repeat;
 +  background-position: center center;
-
-   .login-dialog-prompt-entry {
-     @extend %system_entry;
-@@ -185,6 +189,10 @@ $_gdm_dialog_width: 25em;
-
+ }
+ 
+ // buttons
+@@ -169,6 +173,10 @@ $_gdm_dialog_width: 23em;
+ 
  #lockDialogGroup {
    background-color: $_gdm_bg;
 +  background-image: url(file:///etc/nixos/gdm/gdm-blur.jpg);
@@ -20,5 +20,5 @@
 +  background-repeat: no-repeat;
 +  background-position: center center;
  }
-
+ 
  // Clock
