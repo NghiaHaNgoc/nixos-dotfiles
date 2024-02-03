@@ -17,7 +17,7 @@
 
  #lockDialogGroup {
    background-color: $_gdm_bg;
-+  background-image: url(https://source.unsplash.com/random/1920x1080/?night,scenery);
++  background-image: url("https://source.unsplash.com/random/1920x1080/?night,scenery");
 +  background-size: cover;
 +  background-repeat: no-repeat;
 +  background-position: center center;
