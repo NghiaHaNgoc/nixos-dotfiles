@@ -1,7 +1,3 @@
-# Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
 { config, lib, pkgs, ... }:
 
 {
@@ -10,8 +6,7 @@
   ];
 
   # Options
-  nix.package = pkgs.nix;
-  # nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.allowUnfree = true;
   system.defaultChannel = "https://nixos.org/channels/nixos-unstable";
   documentation.nixos.enable = false;
   hardware.bluetooth.enable = true;
@@ -22,8 +17,8 @@
     kernelParams = [ "quiet" ];
     consoleLogLevel = 0;
     initrd = {
-      #systemd.enable = true;
-      #verbose = false;
+      includeDefaultModules = false;
+      systemd.enable = true;
     };
     loader = {
       systemd-boot = {
@@ -47,10 +42,6 @@
   # Set your time zone.
   time.timeZone = "Asia/Ho_Chi_Minh";
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
   # Select internationalisation properties.
   i18n = {
     defaultLocale = "en_US.UTF-8";
@@ -59,11 +50,6 @@
       ibus.engines = with pkgs.ibus-engines; [ bamboo ];
     };
   };
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  #   useXkbConfig = true; # use xkb.options in tty.
-  # };
 
   # Enable the X11 windowing system.
   services = {
@@ -86,149 +72,105 @@
     gnome.core-utilities.enable = false;
   };
 
-  environment.sessionVariables = {
-    VSCODE_GALLERY_SERVICE_URL =
-      "https://marketplace.visualstudio.com/_apis/public/gallery";
-    VSCODE_GALLERY_ITEM_URL = "https://marketplace.visualstudio.com/items";
-    VSCODE_GALLERY_CACHE_URL =
-      "https://vscode.blob.core.windows.net/gallery/index";
-    VSCODE_GALLERY_CONTROL_URL = "";
+  # Setup environment
+  environment = {
+    sessionVariables = {
+      # Vscodium extensions
+      VSCODE_GALLERY_SERVICE_URL =
+        "https://marketplace.visualstudio.com/_apis/public/gallery";
+      VSCODE_GALLERY_ITEM_URL = "https://marketplace.visualstudio.com/items";
+      VSCODE_GALLERY_CACHE_URL =
+        "https://vscode.blob.core.windows.net/gallery/index";
+      VSCODE_GALLERY_CONTROL_URL = "";
 
+      # Nautilus extensions
+      NAUTILUS_4_EXTENSION_DIR =
+        # path for system
+        # "${config.system.path}/lib/nautilus/extensions-4";
+        # path for user
+        "/etc/profiles/per-user/$USER/lib/nautilus/extensions-4";
+    };
+
+    # List packages installed in system profile.
+    systemPackages = with pkgs; [ ];
+    defaultPackages = [ ];
+    gnome.excludePackages = with pkgs; [ gnome-tour gnome.gnome-backgrounds ];
   };
-  environment.sessionVariables.NAUTILUS_4_EXTENSION_DIR =
-    #"${config.system.path}/lib/nautilus/extensions-4";
-    "/etc/profiles/per-user/$USER/lib/nautilus/extensions-4";
-  environment.gnome.excludePackages = with pkgs; [
-    gnome-tour
-    gnome.gnome-backgrounds
-  ];
-
-  # Configure keymap in X11
-  # services.xserver.xkb.layout = "us";
-  # services.xserver.xkb.options = "eurosign:e,caps:escape";
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.nghiaha = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "networkmanager" ];
     shell = pkgs.fish;
     packages = with pkgs; [
       chromium
       google-chrome
       brave
       starship
-      amberol
       wezterm
-      kitty
+      ripgrep
+      joshuto
+      wl-clipboard
+      (cava.override { withPipewire = false; })
       # Development
       vscodium
-      git
       gcc
       rustup
-      nodePackages.nodejs
-      nodePackages.typescript-language-server
+      lua-language-server
       vscode-langservers-extracted
-      # Gnome package
+      nodePackages.nodejs
+      nodePackages.volar
+      nodePackages.typescript-language-server
+      # Gnome packages
       baobab
       loupe
+      amberol
       gnome.gnome-system-monitor
       gnome.totem
-      gnomeExtensions.pano
-      gnomeExtensions.blur-my-shell
       gnome.file-roller
       gnome.nautilus
       gnome.nautilus-python
+      gnomeExtensions.pano
+      gnomeExtensions.blur-my-shell
     ];
   };
-  users.users.ngocnghia = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-    shell = pkgs.fish;
-  };
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.systemPackages = with pkgs; [ neovim wl-clipboard ];
-  programs.fish.enable = true;
 
-  #fonts.fontDir.enable = true;
-  fonts.packages = with pkgs; [ noto-fonts maple-mono-otf ];
-  nixpkgs = {
-    overlays = [
-      (self: super: {
-        gnome = super.gnome.overrideScope' (selfg: superg: {
-          gnome-shell = superg.gnome-shell.overrideAttrs (old: {
-            patches = (old.patches or [ ]) ++ [
-              (pkgs.writeText "bg.patch" ''
-                --- a/data/theme/gnome-shell-sass/widgets/_login-lock.scss
-                +++ b/data/theme/gnome-shell-sass/widgets/_login-lock.scss
-                @@ -15,7 +15,8 @@ $_gdm_dialog_width: 23em;
-                 
-                 /* Login Dialog */
-                 .login-dialog {
-                -  background-color: $_gdm_bg;
-                +  background: url(file:///etc/nixos/gdm.jpg) no-repeat fixed 0 0 / cover;
-                +  filter: blur(8px);
-                 }
-                 
-                 // buttons
-                @@ -167,7 +168,8 @@ $_gdm_dialog_width: 23em;
-                 }
-                 
-                 #lockDialogGroup {
-                -  background-color: $_gdm_bg;
-                +  background: url(file:///etc/nixos/gdm.jpg) no-repeat fixed 0 0 / cover;
-                +  filter: blur(8px);
-                 }
-                 
-                 // Clock
-              '')
-            ];
-          });
+  # Enable programs 
+  programs = {
+    fish.enable = true;
+    git.enable = true;
+    nano.enable = false;
+    neovim = {
+      enable = true;
+      defaultEditor = true;
+    };
+  };
+
+  # Font packages
+  fonts.packages = with pkgs; [
+    noto-fonts
+    (nerdfonts.override { fonts = [ "NerdFontsSymbolsOnly" ]; })
+    maple-mono-otf
+  ];
+
+  # Gnome gdm backgrounds
+  nixpkgs.overlays = [
+    (self: super: {
+      gnome = super.gnome.overrideScope (selfg: superg: {
+        gnome-shell = superg.gnome-shell.overrideAttrs (old: {
+          patches = (old.patches or [ ]) ++ [
+            (self.fetchpatch {
+              url =
+                "https://raw.githubusercontent.com/NghiaHaNgoc/nixos-dotfiles/main/gdm/gdm.patch";
+              hash = "sha256-hYgNk048kbel2vWb87V3ejt34QFnZnwmTF5ufMqJzBg=";
+            })
+          ];
         });
-      })
-    ];
-  };
+      });
+    })
+  ];
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # Copy the NixOS configuration file and link it from the resulting system
-  # (/run/current-system/configuration.nix). This is useful in case you
-  # accidentally delete configuration.nix.
-  # system.copySystemConfiguration = true;
-
-  # This option defines the first version of NixOS you have installed on this particular machine,
-  # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
-  #
-  # Most users should NEVER change this value after the initial install, for any reason,
-  # even if you've upgraded your system to a new NixOS release.
-  #
-  # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
-  # so changing it will NOT upgrade your system.
-  #
-  # This value being lower than the current NixOS release does NOT mean your system is
-  # out of date, out of support, or vulnerable.
-  #
-  # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
-  # and migrated your data accordingly.
-  #
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
-  system.stateVersion = "23.11"; # Did you read the comment?
+  system.stateVersion = "23.11";
 
 }
